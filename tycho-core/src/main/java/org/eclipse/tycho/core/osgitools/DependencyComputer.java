@@ -128,7 +128,8 @@ public class DependencyComputer {
         if (module == null) {
             return Collections.emptyList();
         }
-
+        count = new HashMap<String, Integer>();
+        System.out.println("@@" + module.getSymbolicName());
         VisiblePackages visiblePackages = getPackagesInternal(module);
         Set<ModuleRevision> added = new HashSet<>();
 
@@ -149,6 +150,11 @@ public class DependencyComputer {
             addDependencyViaImportPackage(bundle, added, visiblePackages, entries);
         }
 
+        List<String> keys = new ArrayList<>(count.keySet());
+        Collections.sort(keys);
+        for (String plugin : keys) {
+            System.out.println(" " + plugin + ":" + count.get(plugin));
+        }
         return entries;
     }
 
@@ -255,9 +261,15 @@ public class DependencyComputer {
         }
     }
 
+    HashMap<String, Integer> count = new HashMap<String, Integer>();
+
     private void getRequiredBundlePackages(ModuleWire requiredWire, Set<String> importedPackageNames,
             Map<String, Set<PackageSource>> packages, Map<ModuleWiring, Map<String, Set<PackageSource>>> allSources) {
+
         ModuleWiring providerWiring = requiredWire.getProviderWiring();
+
+        count.put(providerWiring.getResource().getSymbolicName(),
+                count.getOrDefault(providerWiring.getResource().getSymbolicName(), 0) + 1);
         for (ModuleCapability packageCapability : providerWiring
                 .getModuleCapabilities(PackageNamespace.PACKAGE_NAMESPACE)) {
             String packageName = getPackageName(packageCapability);
